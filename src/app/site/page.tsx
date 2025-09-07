@@ -45,6 +45,7 @@ export default function Home() {
         </p>
         <div className="flex justify-center gap-2 flex-wrap mt-6">
           {pricingCards.map((card) => (
+            // WIP: Wire up free product from stripe
             <Card
               key={card.title}
               className={clsx('w-[300px] flex flex-col justify-between', {
