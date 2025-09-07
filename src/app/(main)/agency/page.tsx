@@ -1,5 +1,5 @@
 const Page = () => {
-  return <div>Domain</div>
+  return <div>Agency Page</div>
 }
 
 export default Page
