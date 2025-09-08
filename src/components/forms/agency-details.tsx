@@ -123,7 +123,9 @@ const AgencyDetails = ({ data }: Props) => {
         }
       }
       newUserData = await initUser({ role: 'AGENCY_OWNER' })
-      if (!data?.customerId && !custId) return
+      if (!data?.customerId) {
+        const response = 
+      }
     } catch (error) {}
   }
 
