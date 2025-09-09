@@ -1,8 +1,9 @@
-import { getAuthUserDetails, verifyAndAcceptInvitation } from '@/lib/queries'
-import { redirect } from 'next/navigation'
-import { Plan } from '@prisma/client'
-import { currentUser } from '@clerk/nextjs'
 import AgencyDetails from '@/components/forms/agency-details'
+import { getAuthUserDetails, verifyAndAcceptInvitation } from '@/lib/queries'
+import { currentUser } from '@clerk/nextjs'
+import { Plan } from '@prisma/client'
+import { redirect } from 'next/navigation'
+import React from 'react'
 
 const Page = async ({
   searchParams,
@@ -14,7 +15,6 @@ const Page = async ({
 
   //get the users details
   const user = await getAuthUserDetails()
-
   if (agencyId) {
     if (user?.role === 'SUBACCOUNT_GUEST' || user?.role === 'SUBACCOUNT_USER') {
       return redirect('/subaccount')
@@ -34,13 +34,11 @@ const Page = async ({
       return <div>Not authorized</div>
     }
   }
-
   const authUser = await currentUser()
-
   return (
     <div className="flex justify-center items-center mt-4">
       <div className="max-w-[850px] border-[1px] p-4 rounded-xl">
-        <h1 className="text-4xl">Create An Agency</h1>
+        <h1 className="text-4xl"> Create An Agency</h1>
         <AgencyDetails
           data={{ companyEmail: authUser?.emailAddresses[0].emailAddress }}
         />
