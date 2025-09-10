@@ -56,16 +56,19 @@ type Props = {
 }
 
 const FormSchema = z.object({
-  name: z.string().min(2, { message: 'Agency name must be atleast 2 chars.' }),
-  companyEmail: z.string().min(1),
-  companyPhone: z.string().min(1),
+  name: z
+    .string()
+    .trim()
+    .min(2, { message: 'Agency name must be atleast 2 chars.' }),
+  companyEmail: z.string().trim().min(1, { message: 'Email is required' }),
+  companyPhone: z.string().trim().min(1, { message: 'Phone is required' }),
   whiteLabel: z.boolean(),
-  address: z.string().min(1),
-  city: z.string().min(1),
-  zipCode: z.string().min(1),
-  state: z.string().min(1),
-  country: z.string().min(1),
-  agencyLogo: z.string().min(1),
+  address: z.string().trim().min(1, { message: 'Address is required' }),
+  city: z.string().trim().min(1, { message: 'City is required' }),
+  zipCode: z.string().trim().min(1, { message: 'Zip code is required' }),
+  state: z.string().trim().min(1, { message: 'State is required' }),
+  country: z.string().trim().min(1, { message: 'Country is required' }),
+  agencyLogo: z.string().trim().min(1, { message: 'Logo is required' }),
 })
 
 const AgencyDetails = ({ data }: Props) => {
@@ -74,18 +77,19 @@ const AgencyDetails = ({ data }: Props) => {
 
   const form = useForm<z.infer<typeof FormSchema>>({
     mode: 'onChange',
+    shouldUnregister: false,
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      name: data?.name,
-      companyEmail: data?.companyEmail,
-      companyPhone: data?.companyPhone,
-      whiteLabel: data?.whiteLabel || false,
-      address: data?.address,
-      city: data?.city,
-      zipCode: data?.zipCode,
-      state: data?.state,
-      country: data?.country,
-      agencyLogo: data?.agencyLogo,
+      name: data?.name ?? '',
+      companyEmail: data?.companyEmail ?? '',
+      companyPhone: data?.companyPhone ?? '',
+      whiteLabel: data?.whiteLabel ?? false,
+      address: data?.address ?? '',
+      city: data?.city ?? '',
+      zipCode: data?.zipCode ?? '',
+      state: data?.state ?? '',
+      country: data?.country ?? '',
+      agencyLogo: data?.agencyLogo ?? '',
     },
   })
 
@@ -93,34 +97,49 @@ const AgencyDetails = ({ data }: Props) => {
 
   useEffect(() => {
     if (data) {
-      form.reset(data)
+      form.reset({
+        name: data?.name ?? '',
+        companyEmail: data?.companyEmail ?? '',
+        companyPhone: data?.companyPhone ?? '',
+        whiteLabel: data?.whiteLabel ?? false,
+        address: data?.address ?? '',
+        city: data?.city ?? '',
+        zipCode: data?.zipCode ?? '',
+        state: data?.state ?? '',
+        country: data?.country ?? '',
+        agencyLogo: data?.agencyLogo ?? '',
+      })
     }
   }, [data])
 
   const handleSubmit = async (values: z.infer<typeof FormSchema>) => {
     try {
+      console.log('Submit values (param):', values)
+      const valuesByGet = form.getValues()
+      console.log('Submit values (getValues):', valuesByGet)
+      const parsed = FormSchema.parse(valuesByGet)
       let newUserData
       let custId
       if (!data?.id) {
         const bodyData = {
-          email: values.companyEmail,
-          name: values.name,
+          email: parsed.companyEmail,
+          name: parsed.name,
           shipping: {
             address: {
-              city: values.city,
-              country: values.country,
-              line1: values.address,
-              postal_code: values.zipCode,
-              state: values.state,
+              city: parsed.city,
+              country: parsed.country,
+              line1: parsed.address,
+              postal_code: parsed.zipCode,
+              state: parsed.state,
             },
-            name: values.name,
+            name: parsed.name,
           },
           address: {
-            city: values.city,
-            country: values.country,
-            line1: values.address,
-            postal_code: values.zipCode,
-            state: values.state,
+            city: parsed.city,
+            country: parsed.country,
+            line1: parsed.address,
+            postal_code: parsed.zipCode,
+            state: parsed.state,
           },
         }
       }
@@ -128,18 +147,16 @@ const AgencyDetails = ({ data }: Props) => {
       if (!data?.id) {
         await upsertAgency({
           id: data?.id ? data.id : v4(),
-          address: values.address,
-          agencyLogo: values.agencyLogo,
-          city: values.city,
-          companyPhone: values.companyPhone,
-          country: values.country,
-          name: values.name,
-          state: values.state,
-          whiteLabel: values.whiteLabel,
-          zipCode: values.zipCode,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          companyEmail: values.companyEmail,
+          address: parsed.address,
+          agencyLogo: parsed.agencyLogo,
+          city: parsed.city,
+          companyPhone: parsed.companyPhone,
+          country: parsed.country,
+          name: parsed.name,
+          state: parsed.state,
+          whiteLabel: parsed.whiteLabel,
+          zipCode: parsed.zipCode,
+          companyEmail: parsed.companyEmail,
           connectAccountId: '',
           goal: 5,
         })
@@ -188,7 +205,9 @@ const AgencyDetails = ({ data }: Props) => {
         <CardContent>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(handleSubmit)}
+              onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+                console.log('Form validation errors', errors)
+              })}
               className="space-y-4"
             >
               <FormField
@@ -272,8 +291,8 @@ const AgencyDetails = ({ data }: Props) => {
 
                       <FormControl>
                         <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                          checked={!!field.value}
+                          onCheckedChange={(v) => field.onChange(v)}
                         />
                       </FormControl>
                     </FormItem>
@@ -381,7 +400,10 @@ const AgencyDetails = ({ data }: Props) => {
                   />
                 </div>
               )}
-              <Button type="submit" disabled={isLoading}>
+              <Button
+                type="submit"
+                disabled={isLoading || !form.formState.isValid}
+              >
                 {isLoading ? <Loading /> : 'Save Agency Information'}
               </Button>
             </form>

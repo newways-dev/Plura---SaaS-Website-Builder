@@ -4,6 +4,7 @@ import { clerkClient, currentUser } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 import { db } from './db'
 import { Agency, Plan, User } from '@prisma/client'
+import * as z from 'zod'
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser()
@@ -149,11 +150,16 @@ export const verifyAndAcceptInvitation = async () => {
     })
 
     if (userDetails) {
-      await clerkClient.users.updateUserMetadata(user.id, {
-        privateMetadata: {
-          role: userDetails.role || 'SUBACCOUNT_USER',
-        },
-      })
+      try {
+        await clerkClient.users.updateUserMetadata(user.id, {
+          privateMetadata: {
+            role: userDetails.role || 'SUBACCOUNT_USER',
+          },
+        })
+      } catch (err) {
+        console.error('Failed to update Clerk user metadata (invitation):', err)
+        // Do not block flow if Clerk metadata update fails in dev
+      }
 
       await db.invitation.delete({
         where: { email: userDetails.email },
@@ -205,67 +211,110 @@ export const initUser = async (newUser: Partial<User>) => {
     },
   })
 
-  await clerkClient.users.updateUserMetadata(user.id, {
-    privateMetadata: {
-      role: newUser.role || 'SUBACCOUNT_USER',
-    },
-  })
+  try {
+    await clerkClient.users.updateUserMetadata(user.id, {
+      privateMetadata: {
+        role: newUser.role || 'SUBACCOUNT_USER',
+      },
+    })
+  } catch (err) {
+    console.error('Failed to update Clerk user metadata (initUser):', err)
+  }
 
   return userData
 }
 
-export const upsertAgency = async (agency: Agency, price?: Plan) => {
-  if (!agency.companyEmail) return null
-  try {
-    const agencyDetails = await db.agency.upsert({
-      where: {
-        id: agency.id,
-      },
-      update: agency,
-      create: {
-        users: {
-          connect: { email: agency.companyEmail },
-        },
-        ...agency,
-        SidebarOption: {
-          create: [
-            {
-              name: 'Dashboard',
-              icon: 'category',
-              link: `/agency/${agency.id}`,
-            },
-            {
-              name: 'Launchpad',
-              icon: 'clipboardIcon',
-              link: `/agency/${agency.id}/launchpad`,
-            },
-            {
-              name: 'Billing',
-              icon: 'payment',
-              link: `/agency/${agency.id}/billing`,
-            },
-            {
-              name: 'Settings',
-              icon: 'settings',
-              link: `/agency/${agency.id}/settings`,
-            },
-            {
-              name: 'Sub Accounts',
-              icon: 'person',
-              link: `/agency/${agency.id}/all-subaccounts`,
-            },
-            {
-              name: 'Team',
-              icon: 'shield',
-              link: `/agency/${agency.id}/team`,
-            },
-          ],
-        },
-      },
-    })
+const UpsertAgencySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().trim().min(1),
+  agencyLogo: z.string().trim().min(1),
+  companyEmail: z.string().trim().min(1),
+  companyPhone: z.string().trim().min(1),
+  whiteLabel: z.boolean(),
+  address: z.string().trim().min(1),
+  city: z.string().trim().min(1),
+  zipCode: z.string().trim().min(1),
+  state: z.string().trim().min(1),
+  country: z.string().trim().min(1),
+  connectAccountId: z.string().optional().default(''),
+  goal: z.number().int().optional().default(5),
+})
 
-    return agencyDetails
-  } catch (error) {
-    console.log(error)
-  }
+export type UpsertAgencyInput = z.infer<typeof UpsertAgencySchema>
+
+export const upsertAgency = async (input: UpsertAgencyInput, price?: Plan) => {
+  const agency = UpsertAgencySchema.parse(input)
+  const agencyDetails = await db.agency.upsert({
+    where: {
+      id: agency.id,
+    },
+    update: {
+      name: agency.name,
+      agencyLogo: agency.agencyLogo,
+      companyEmail: agency.companyEmail,
+      companyPhone: agency.companyPhone,
+      whiteLabel: agency.whiteLabel,
+      address: agency.address,
+      city: agency.city,
+      zipCode: agency.zipCode,
+      state: agency.state,
+      country: agency.country,
+      connectAccountId: agency.connectAccountId,
+      goal: agency.goal,
+    },
+    create: {
+      id: agency.id,
+      name: agency.name,
+      agencyLogo: agency.agencyLogo,
+      companyEmail: agency.companyEmail,
+      companyPhone: agency.companyPhone,
+      whiteLabel: agency.whiteLabel,
+      address: agency.address,
+      city: agency.city,
+      zipCode: agency.zipCode,
+      state: agency.state,
+      country: agency.country,
+      connectAccountId: agency.connectAccountId,
+      goal: agency.goal,
+      users: {
+        connect: { email: agency.companyEmail },
+      },
+      SidebarOption: {
+        create: [
+          {
+            name: 'Dashboard',
+            icon: 'category',
+            link: `/agency/${agency.id}`,
+          },
+          {
+            name: 'Launchpad',
+            icon: 'clipboardIcon',
+            link: `/agency/${agency.id}/launchpad`,
+          },
+          {
+            name: 'Billing',
+            icon: 'payment',
+            link: `/agency/${agency.id}/billing`,
+          },
+          {
+            name: 'Settings',
+            icon: 'settings',
+            link: `/agency/${agency.id}/settings`,
+          },
+          {
+            name: 'Sub Accounts',
+            icon: 'person',
+            link: `/agency/${agency.id}/all-subaccounts`,
+          },
+          {
+            name: 'Team',
+            icon: 'shield',
+            link: `/agency/${agency.id}/team`,
+          },
+        ],
+      },
+    },
+  })
+
+  return agencyDetails
 }
