@@ -24,6 +24,9 @@ import {
 } from '../ui/command'
 import Link from 'next/link'
 import { Separator } from '../ui/separator'
+import { useModal } from '@/providers/modal-provider'
+import CustomModal from '../global/custom-modal'
+import SubAccountDetails from '../forms/subaccount-details'
 
 type Props = {
   defaultOpen?: boolean
@@ -45,6 +48,7 @@ const MenuOptions = ({
   defaultOpen,
 }: Props) => {
   const [isMounted, setIsMounted] = useState(false)
+  const { setOpen } = useModal()
 
   const openState = useMemo(
     () => (defaultOpen ? { open: true } : {}),
@@ -219,7 +223,7 @@ const MenuOptions = ({
                 {(user?.role === 'AGENCY_OWNER' ||
                   user?.role === 'AGENCY_ADMIN') && (
                   <SheetClose>
-                    {/* <Button
+                    <Button
                       className="w-full flex gap-2"
                       onClick={() => {
                         setOpen(
@@ -238,7 +242,7 @@ const MenuOptions = ({
                     >
                       <PlusCircleIcon size={15} />
                       Create Sub Account
-                    </Button> */}
+                    </Button>
                   </SheetClose>
                 )}
               </Command>

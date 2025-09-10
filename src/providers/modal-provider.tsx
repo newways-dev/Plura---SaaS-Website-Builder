@@ -1,6 +1,6 @@
 'use client'
 
-import { Agency, Contact, Plan, User } from '@prisma/client'
+import { Agency, User } from '@prisma/client'
 import {
   createContext,
   FC,
