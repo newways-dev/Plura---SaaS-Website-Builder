@@ -20,6 +20,11 @@ export const getAuthUserDetails = async () => {
       Agency: {
         include: {
           SidebarOption: true,
+          SubAccount: {
+            include: {
+              SidebarOption: true,
+            },
+          },
         },
       },
       Permissions: true,
