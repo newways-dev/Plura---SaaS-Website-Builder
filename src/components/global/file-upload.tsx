@@ -5,7 +5,7 @@ import { Button } from '../ui/button'
 import { UploadDropzone } from '@/lib/uploadthing'
 
 type Props = {
-  apiEndpoint: 'agencyLogo' | 'avatar' | 'subaccountLogo'
+  apiEndpoint: 'agencyLogo' | 'avatar' | 'subaccountLogo' | 'media'
   onChange: (url?: string) => void
   value?: string
 }
@@ -23,6 +23,7 @@ const FileUpload = ({ apiEndpoint, onChange, value }: Props) => {
               alt="uploaded image"
               className="object-contain"
               fill
+              sizes="(max-width: 640px) 100vw, 160px"
             />
           </div>
         ) : (

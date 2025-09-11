@@ -6,6 +6,7 @@ import { db } from './db'
 import { Agency, Plan, Role, SubAccount, User } from '@prisma/client'
 import * as z from 'zod'
 import { v4 } from 'uuid'
+import { CreateMediaType } from './types'
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser()
@@ -44,6 +45,7 @@ export const saveActivityLogsNotification = async ({
   description: string
   subaccountId?: string
 }) => {
+  'use server'
   const authUser = await currentUser()
   let userData
   if (!authUser) {
@@ -591,4 +593,40 @@ export const sendInvitation = async (
   }
 
   return resposne
+}
+
+export const getMedia = async (subaccountId: string) => {
+  const mediafiles = await db.subAccount.findUnique({
+    where: {
+      id: subaccountId,
+    },
+    include: { Media: true },
+  })
+  return mediafiles
+}
+
+export const createMedia = async (
+  subaccountId: string,
+  mediaFile: CreateMediaType
+) => {
+  'use server'
+  const response = await db.media.create({
+    data: {
+      link: mediaFile.link,
+      name: mediaFile.name,
+      subAccountId: subaccountId,
+    },
+  })
+
+  return response
+}
+
+export const deleteMedia = async (mediaId: string) => {
+  'use server'
+  const response = await db.media.delete({
+    where: {
+      id: mediaId,
+    },
+  })
+  return response
 }
