@@ -340,7 +340,26 @@ export const getNotificationAndUser = async (agencyId: string) => {
   }
 }
 
-export const upsertSubAccount = async (subAccount: SubAccount) => {
+const UpsertSubAccountSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().trim().min(1),
+  subAccountLogo: z.string().trim().min(1),
+  companyEmail: z.string().trim().min(1),
+  companyPhone: z.string().trim().min(1),
+  address: z.string().trim().min(1),
+  city: z.string().trim().min(1),
+  zipCode: z.string().trim().min(1),
+  state: z.string().trim().min(1),
+  country: z.string().trim().min(1),
+  agencyId: z.string().min(1),
+  connectAccountId: z.string().optional().default(''),
+  goal: z.number().int().optional().default(5),
+})
+
+export type UpsertSubAccountInput = z.infer<typeof UpsertSubAccountSchema>
+
+export const upsertSubAccount = async (input: UpsertSubAccountInput) => {
+  const subAccount = UpsertSubAccountSchema.parse(input)
   if (!subAccount.companyEmail) return null
   const agencyOwner = await db.user.findFirst({
     where: {
@@ -356,9 +375,38 @@ export const upsertSubAccount = async (subAccount: SubAccount) => {
   const permissionId = v4()
   const response = await db.subAccount.upsert({
     where: { id: subAccount.id },
-    update: subAccount,
+    update: {
+      name: subAccount.name,
+      subAccountLogo: subAccount.subAccountLogo,
+      companyEmail: subAccount.companyEmail,
+      companyPhone: subAccount.companyPhone,
+      address: subAccount.address,
+      city: subAccount.city,
+      zipCode: subAccount.zipCode,
+      state: subAccount.state,
+      country: subAccount.country,
+      connectAccountId: subAccount.connectAccountId,
+      goal: subAccount.goal,
+      agencyId: subAccount.agencyId,
+    },
     create: {
-      ...subAccount,
+      id: subAccount.id,
+      name: subAccount.name,
+      subAccountLogo: subAccount.subAccountLogo,
+      companyEmail: subAccount.companyEmail,
+      companyPhone: subAccount.companyPhone,
+      address: subAccount.address,
+      city: subAccount.city,
+      zipCode: subAccount.zipCode,
+      state: subAccount.state,
+      country: subAccount.country,
+      connectAccountId: subAccount.connectAccountId,
+      goal: subAccount.goal,
+      Agency: {
+        connect: {
+          id: subAccount.agencyId,
+        },
+      },
       Permissions: {
         create: {
           access: true,

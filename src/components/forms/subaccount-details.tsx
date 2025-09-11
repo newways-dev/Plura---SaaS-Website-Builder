@@ -69,7 +69,7 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: details?.name ?? '',
-      companyEmail: details?.companyEmail ?? '',
+      companyEmail: details?.companyEmail ?? agencyDetails.companyEmail ?? '',
       companyPhone: details?.companyPhone ?? '',
       address: details?.address ?? '',
       city: details?.city ?? '',
@@ -82,19 +82,21 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const valuesByGet = form.getValues()
+      const parsed = formSchema.parse(valuesByGet)
+      console.log('Submit subaccount (getValues):', valuesByGet)
+      console.log('Submit subaccount (parsed):', parsed)
       const response = await upsertSubAccount({
         id: details?.id ? details.id : v4(),
-        address: values.address,
-        subAccountLogo: values.subAccountLogo,
-        city: values.city,
-        companyPhone: values.companyPhone,
-        country: values.country,
-        name: values.name,
-        state: values.state,
-        zipCode: values.zipCode,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        companyEmail: values.companyEmail,
+        address: parsed.address,
+        subAccountLogo: parsed.subAccountLogo,
+        city: parsed.city,
+        companyPhone: parsed.companyPhone,
+        country: parsed.country,
+        name: parsed.name,
+        state: parsed.state,
+        zipCode: parsed.zipCode,
+        companyEmail: parsed.companyEmail,
         agencyId: agencyDetails.id,
         connectAccountId: '',
         goal: 5000,
@@ -123,7 +125,8 @@ const SubAccountDetails: React.FC<SubAccountDetailsProps> = ({
     if (details) {
       form.reset({
         name: details?.name ?? '',
-        companyEmail: details?.companyEmail ?? '',
+        companyEmail:
+          details?.companyEmail ?? agencyDetails.companyEmail ?? '',
         companyPhone: details?.companyPhone ?? '',
         address: details?.address ?? '',
         city: details?.city ?? '',
