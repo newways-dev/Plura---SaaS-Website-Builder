@@ -1,23 +1,23 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { NotificationWithUser } from '@/lib/types'
 import { UserButton } from '@clerk/nextjs'
 import type { Role } from '@prisma/client'
-import { useState } from 'react'
+import { ModeToggle } from './mode-toggle'
 import { twMerge } from 'tailwind-merge'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '../ui/sheet'
+import { Switch } from '../ui/switch'
 import { Bell } from 'lucide-react'
 import { Card } from '../ui/card'
-import { Switch } from '../ui/switch'
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
-import { ModeToggle } from './mode-toggle'
+import { useState } from 'react'
+import {
+  SheetDescription,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  Sheet,
+} from '../ui/sheet'
 
 type Props = {
   notifications: NotificationWithUser | []
