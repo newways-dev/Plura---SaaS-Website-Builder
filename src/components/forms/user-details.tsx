@@ -93,11 +93,12 @@ const UserDetails = ({ id, type, subAccounts, userData }: Props) => {
   const form = useForm<z.infer<typeof userDataSchema>>({
     resolver: zodResolver(userDataSchema),
     mode: 'onChange',
+    shouldUnregister: false,
     defaultValues: {
-      name: userData ? userData.name : data?.user?.name,
-      email: userData ? userData.email : data?.user?.email,
-      avatarUrl: userData ? userData.avatarUrl : data?.user?.avatarUrl,
-      role: userData ? userData.role : data?.user?.role,
+      name: userData?.name ?? data?.user?.name ?? '',
+      email: userData?.email ?? data?.user?.email ?? '',
+      avatarUrl: userData?.avatarUrl ?? data?.user?.avatarUrl ?? '',
+      role: (userData?.role ?? data?.user?.role ?? 'SUBACCOUNT_USER') as any,
     },
   })
 
@@ -112,11 +113,13 @@ const UserDetails = ({ id, type, subAccounts, userData }: Props) => {
   }, [data, form])
 
   useEffect(() => {
-    if (data.user) {
-      form.reset(data.user)
-    }
-    if (userData) {
-      form.reset(userData)
+    if (data.user || userData) {
+      form.reset({
+        name: userData?.name ?? data?.user?.name ?? '',
+        email: userData?.email ?? data?.user?.email ?? '',
+        avatarUrl: userData?.avatarUrl ?? data?.user?.avatarUrl ?? '',
+        role: (userData?.role ?? data?.user?.role ?? 'SUBACCOUNT_USER') as any,
+      })
     }
   }, [userData, data])
 
@@ -271,6 +274,7 @@ const UserDetails = ({ id, type, subAccounts, userData }: Props) => {
                   <FormLabel> User Role</FormLabel>
                   <Select
                     disabled={field.value === 'AGENCY_OWNER'}
+                    value={field.value}
                     onValueChange={(value) => {
                       if (
                         value === 'SUBACCOUNT_USER' ||
@@ -284,7 +288,6 @@ const UserDetails = ({ id, type, subAccounts, userData }: Props) => {
                       }
                       field.onChange(value)
                     }}
-                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -292,9 +295,7 @@ const UserDetails = ({ id, type, subAccounts, userData }: Props) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="AGENCY_ADMING">
-                        Agency Admin
-                      </SelectItem>
+                      <SelectItem value="AGENCY_ADMIN">Agency Admin</SelectItem>
                       {(data?.user?.role === 'AGENCY_OWNER' ||
                         userData?.role === 'AGENCY_OWNER') && (
                         <SelectItem value="AGENCY_OWNER">

@@ -3,7 +3,7 @@
 import { clerkClient, currentUser } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 import { db } from './db'
-import { Agency, Plan, SubAccount, User } from '@prisma/client'
+import { Agency, Plan, Role, SubAccount, User } from '@prisma/client'
 import * as z from 'zod'
 import { v4 } from 'uuid'
 
@@ -532,4 +532,63 @@ export const deleteSubAccount = async (subaccountId: string) => {
     },
   })
   return response
+}
+
+export const deleteUser = async (userId: string) => {
+  await clerkClient.users.updateUserMetadata(userId, {
+    privateMetadata: {
+      role: undefined,
+    },
+  })
+  const deletedUser = await db.user.delete({ where: { id: userId } })
+
+  return deletedUser
+}
+
+export const getUser = async (id: string) => {
+  const user = await db.user.findUnique({
+    where: {
+      id,
+    },
+  })
+
+  return user
+}
+
+export const sendInvitation = async (
+  role: Role,
+  email: string,
+  agencyId: string
+) => {
+  const SendInvitationSchema = z.object({
+    role: z.nativeEnum(Role),
+    email: z.string().email(),
+    agencyId: z.string().min(1),
+  })
+
+  const parsed = SendInvitationSchema.parse({ role, email, agencyId })
+
+  const resposne = await db.invitation.create({
+    data: {
+      email: parsed.email,
+      agencyId: parsed.agencyId,
+      role: parsed.role,
+    },
+  })
+
+  try {
+    const invitation = await clerkClient.invitations.createInvitation({
+      emailAddress: parsed.email,
+      redirectUrl: process.env.NEXT_PUBLIC_URL,
+      publicMetadata: {
+        throughInvitation: true,
+        role: parsed.role,
+      },
+    })
+  } catch (error) {
+    console.log(error)
+    throw error
+  }
+
+  return resposne
 }
