@@ -1,6 +1,12 @@
-import type { Prisma } from '@prisma/client'
-import { getAuthUserDetails, getMedia, getUserPermissions } from './queries'
+import type { Contact, Lane, Prisma, Tag, Ticket, User } from '@prisma/client'
+import {
+  getAuthUserDetails,
+  getMedia,
+  getPipelineDetails,
+  getUserPermissions,
+} from './queries'
 import { db } from './db'
+import z from 'zod'
 
 // Array of Notification including related User, matching:
 // db.notification.findMany({ include: { User: true } })
@@ -35,3 +41,28 @@ export type UsersWithAgencySubAccountPermissionsSidebarOptions =
 export type GetMediaFiles = Prisma.PromiseReturnType<typeof getMedia>
 
 export type CreateMediaType = Prisma.MediaCreateWithoutSubaccountInput
+
+export type TicketAndTags = Ticket & {
+  Tags: Tag[]
+  Assigned: User | null
+  Customer: Contact | null
+}
+
+export type LaneDetail = Lane & {
+  Tickets: TicketAndTags[]
+}
+
+export const CreatePipelineFormSchema = z.object({
+  name: z.string().min(1),
+})
+
+export const CreateFunnelFormSchema = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  subDomainName: z.string().optional(),
+  favicon: z.string().optional(),
+})
+
+export type PipelineDetailsWithLanesCardsTagsTickets = Prisma.PromiseReturnType<
+  typeof getPipelineDetails
+>
