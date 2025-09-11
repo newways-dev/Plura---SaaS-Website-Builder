@@ -1,8 +1,8 @@
 'use client'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Card,
   CardContent,
@@ -19,11 +19,12 @@ import {
   FormMessage,
 } from '../ui/form'
 import { createMedia, saveActivityLogsNotification } from '@/lib/queries'
-import { Input } from '../ui/input'
+import { useModal } from '@/providers/modal-provider'
 import FileUpload from '../global/file-upload'
 import { Button } from '../ui/button'
-import { z } from 'zod'
+import { Input } from '../ui/input'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 type Props = {
   subaccountId: string
@@ -36,6 +37,7 @@ const formSchema = z.object({
 
 const UploadMediaForm = ({ subaccountId }: Props) => {
   const router = useRouter()
+  const { setClose } = useModal()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onSubmit',
@@ -54,6 +56,7 @@ const UploadMediaForm = ({ subaccountId }: Props) => {
         subaccountId,
       })
       toast.success('Success', { description: 'Uploaded media' })
+      setClose()
       router.refresh()
     } catch (error) {
       console.log(error)
