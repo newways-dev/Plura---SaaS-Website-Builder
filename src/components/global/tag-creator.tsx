@@ -1,7 +1,8 @@
 'use client'
-import { Tag } from '@prisma/client'
+
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import { Tag } from '@prisma/client'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,10 +46,10 @@ export type TagColor = (typeof TagColors)[number]
 
 const TagCreator = ({ getSelectedTags, subAccountId, defaultTags }: Props) => {
   const [selectedTags, setSelectedTags] = useState<Tag[]>(defaultTags || [])
-  const [tags, setTags] = useState<Tag[]>([])
-  const router = useRouter()
-  const [value, setValue] = useState('')
   const [selectedColor, setSelectedColor] = useState('')
+  const [tags, setTags] = useState<Tag[]>([])
+  const [value, setValue] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
     getSelectedTags(selectedTags)

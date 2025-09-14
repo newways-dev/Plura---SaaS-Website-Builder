@@ -17,7 +17,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -28,9 +27,7 @@ import { Textarea } from '../ui/textarea'
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
@@ -212,7 +209,6 @@ const TicketForm = ({ getNewTicket, laneId, subaccountId }: Props) => {
                           <User2 size={14} />
                         </AvatarFallback>
                       </Avatar>
-
                       <span className="text-sm text-muted-foreground">
                         Not Assigned
                       </span>
@@ -230,7 +226,6 @@ const TicketForm = ({ getNewTicket, laneId, subaccountId }: Props) => {
                           <User2 size={14} />
                         </AvatarFallback>
                       </Avatar>
-
                       <span className="text-sm text-muted-foreground">
                         {teamMember.name}
                       </span>
