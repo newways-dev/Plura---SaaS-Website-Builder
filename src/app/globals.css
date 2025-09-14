@@ -119,3 +119,14 @@ B (255 */
     transform: scale(1);
   }
 }
+
+/* Hide native scrollbars globally (maintains scroll functionality) */
+* {
+  -ms-overflow-style: none; /* IE and old Edge */
+  scrollbar-width: none; /* Firefox */
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent; /* Chrome/Safari */
+}
